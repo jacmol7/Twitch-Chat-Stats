@@ -3,11 +3,6 @@ const app = express();
 const port = 3000;
 var wordCollection;
 
-/* app.get('*', (req, res) => {
-    console.log(req.query.test);
-    res.send('wildcard');
-}); */
-
 // top word
 
 // top word for streamer
@@ -89,6 +84,12 @@ app.get('/topemote', (req, res) => {
 });
 
 // top emote
+
+app.get('*', (req, res) => {
+    res.send({
+        error: "unsupported command"
+    });
+});
 
 exports.start = client => {
     wordCollection = client.db('twitch').collection('word');
