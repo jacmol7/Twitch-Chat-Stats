@@ -1,5 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
 const twitchLogging = require('./twitchLogging.js');
+const resultsApi = require('./resultsApi.js');
 const url = 'mongodb://127.0.0.1:27017/?compressors=zlib&gssapiServiceName=mongodb';
 
 MongoClient.connect(url,{
@@ -12,4 +13,5 @@ MongoClient.connect(url,{
     }
 
     twitchLogging.start(client);
+    resultsApi.start(client);
   });
