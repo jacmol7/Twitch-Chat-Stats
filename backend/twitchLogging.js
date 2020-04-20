@@ -54,36 +54,22 @@ function onMessageHandler(channel, user, msg, self) {
 
     // write to database
     for (let word of wordCounts.keys()) {
-        wordCollection.findOne({_id:word, total:"$exists"}).then(document => {
-            // updating an existing word
-            if (document) {
-                if(document.streamer[channel]) {
-                    document.streamer[channel] += wordCounts.get(word);
-                } else {
-                    document.streamer[channel] = wordCounts.get(word);
-                }
-                document.total = document.total + wordCounts.get(word);
-                wordCollection.replaceOne({_id:word}, document);
-            } 
-            // inserting a new word
-            else {
-                let newDocument = {
-                    _id: word,
-                    word: word,
-                    streamer: {},
-                    isEmote: false
-                }
-                newDocument.streamer[channel] = wordCounts.get(word);
-                newDocument.total = wordCounts.get(word);
-                if(emoteCounts.has(word)) {
-                    newDocument.isEmote = true
-                    newDocument.emoteID = emoteCounts.get(word).emoteID;
-                }
-                wordCollection.insertOne(newDocument);
-            }
-        }).catch(error => {
-            console.error(error);
-        });
+        if(!emoteCounts.get(word)) {
+            let updateOp = {$inc: {}};
+            updateOp.$inc["streamer."+channel] = wordCounts.get(word);
+            updateOp.$inc.total = wordCounts.get(word);
+            wordCollection.findOneAndUpdate({word:word, isEmote:false},updateOp,{upsert:true}).catch(e => {
+                console.log(e);
+            });
+        } else {
+            let updateOp = {$inc: {}, $set: {}};
+            updateOp.$inc["streamer."+channel] = wordCounts.get(word);
+            updateOp.$inc.total = wordCounts.get(word);
+            updateOp.$set.emoteID = emoteCounts.get(word).emoteID;
+            wordCollection.findOneAndUpdate({word:word, isEmote:true},updateOp,{upsert:true}).catch(e => {
+                console.log(e);
+            });
+        }
     }
 
     //console.log(`${chalk.hex(user.color || '#FFFFFF')(user.username)} : ${msg.trim()}`);
