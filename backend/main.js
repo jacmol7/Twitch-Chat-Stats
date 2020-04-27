@@ -1,7 +1,10 @@
 const MongoClient = require('mongodb').MongoClient;
 const twitchLogging = require('./twitchLogging.js');
 const resultsApi = require('./resultsApi.js');
-const url = 'mongodb://127.0.0.1:27017/?compressors=zlib&gssapiServiceName=mongodb';
+const fs = require('fs');
+
+const dbOptions = JSON.parse(fs.readFileSync('mongodbSettings.json'));
+const url = `mongodb://${dbOptions.username}:${dbOptions.password}@64.227.47.29:27017/?compressors=zlib`;
 
 MongoClient.connect(url,{
     useNewUrlParser: true,
