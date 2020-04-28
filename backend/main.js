@@ -4,7 +4,8 @@ const resultsApi = require('./resultsApi.js');
 const fs = require('fs');
 
 const dbOptions = JSON.parse(fs.readFileSync('mongodbSettings.json'));
-const url = `mongodb://${dbOptions.username}:${dbOptions.password}@jacmol.com:27017/?compressors=zlib`;
+const url = `mongodb://${dbOptions.username}:${dbOptions.password}@0.0.0.0:27017/?compressors=zlib`;
+console.log(url);
 
 MongoClient.connect(url,{
     useNewUrlParser: true,
