@@ -1,9 +1,0 @@
-{
-    "identity": {
-      "username": "twitch username",
-      "password": "twitch oauth"
-    },
-    "channels": [
-      "list of twitch channels to monitor"
-    ]
-}
