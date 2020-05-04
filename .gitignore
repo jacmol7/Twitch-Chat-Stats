@@ -1,3 +1,5 @@
 /backend/node_modules
+/backend/TwitchLogger/node_modules
+/backend/TwitchDataApi/node_modules
 /backend/twitchSettings.json
 /backend/mongodbSettings.json
