@@ -1,6 +1,9 @@
 /backend/TwitchLogger/node_modules
 /backend/TwitchDataApi/node_modules
+/backend/TwitchStreamFinder/node_modules
 
 /backend/TwitchLogger/twitchSettings.json
 /backend/TwitchLogger/mongodbSettings.json
 /backend/TwitchDataApi/mongodbSettings.json
+/backend/TwitchStreamFinder/mongodbSettings.json
+/backend/TwitchStreamFinder/twitchApiSettings.json
