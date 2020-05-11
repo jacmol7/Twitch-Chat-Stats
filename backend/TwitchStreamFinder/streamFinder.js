@@ -12,7 +12,7 @@ function makeRequest(pagination, db, twitchSettings) {
     let options = {
         url: 'https://api.twitch.tv/helix/streams?first=100',
         headers: {
-            'ClientID': twitchSettings.Client-ID,
+            'Client-ID': twitchSettings.ClientID,
             'Authorization': twitchSettings.Authorization
         }
     };
