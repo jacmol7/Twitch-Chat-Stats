@@ -57,7 +57,7 @@ function makeRequest(pagination, db, twitchSettings) {
         // make next request if more pages are available
         if(data.pagination) {
             //makeRequest(data.pagination.cursor, db);
-            setTimeout(makeRequest,2000,data.pagination.cursor, db);
+            setTimeout(makeRequest,2000,data.pagination.cursor, db, twitchSettings);
         }
     });
 }
