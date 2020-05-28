@@ -1,7 +1,7 @@
 {
   "name": "twitchdataapi",
   "version": "1.0.0",
-  "description": "A JSON api to retrieve results about data logged from twitch chat",
+  "description": "",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,6 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "mongodb": "^3.5.7"
+    "pg": "^8.2.1"
   }
 }
