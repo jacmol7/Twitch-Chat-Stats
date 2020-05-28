@@ -7,3 +7,4 @@
 /backend/TwitchDataApi/mongodbSettings.json
 /backend/TwitchStreamFinder/mongodbSettings.json
 /backend/TwitchStreamFinder/twitchApiSettings.json
+/backend/TwitchLogger/sqlSettings.json
