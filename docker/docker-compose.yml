@@ -2,16 +2,15 @@ version: '3'
 
 services:
     twitchdb:
-        image: mongo   
+        image: postgres   
         ports:
-            - "27017:27017"
+            - "5432:5432"
         restart: always
         environment:
-            MONGO_INITDB_ROOT_USERNAME: rootusername
-            MONGO_INITDB_ROOT_PASSWORD: rootpassword
+            POSTGRES_PASSWORD: SecurePassword1!
+            POSTGRES_DB: twitch
         volumes:
-            - twitchdb:/data/db
-        command: --auth
+            - twitchdbpostgres:/var/lib/postgresql/data
     twitchlogger:
         build:
             context: ./TwitchLogger

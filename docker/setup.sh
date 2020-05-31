@@ -10,8 +10,8 @@ rm -rf Twitch-Chat-Stats
 
 echo "copy config files to docker setup folders"
 cp twitchSettings.json TwitchLogger
-cp mongodbSettings.json TwitchLogger
-cp mongodbSettings.json TwitchDataApi
+cp sqlSettings.json TwitchLogger
+cp sqlSettings.json TwitchDataApi
 
 echo "start docker compose"
 docker-compose -p twitchstats up --build -d
