@@ -1,11 +1,12 @@
 const request = require('request');
 const fs = require('fs');
-const MongoClient = require('mongodb').MongoClient;
+const {Pool, Client} = require('pg');
+const sqlCon;
 
 exports.start = (client) => {
     const twitchApiSettings = JSON.parse(fs.readFileSync('twitchApiSettings.json'));
-    const streamerCollection = client.db('twitchtest').collection('streamer');
-    makeRequest(false, streamerCollection, twitchApiSettings);
+    sqlCon = client;
+    makeRequest(false, twitchApiSettings);
 }
 
 function makeRequest(pagination, db, twitchSettings) {
@@ -47,17 +48,20 @@ function makeRequest(pagination, db, twitchSettings) {
         for(let streamer of data.data) {
             console.log(streamer.user_name);
 
-            let updateOp = {$set: {}};
-            updateOp.$set.name = streamer.user_name;
-            db.findOneAndUpdate({name:streamer.user_name},updateOp,{upsert:true}).catch(e => {
-                console.error(e);
+            const query = "INSERT INTO streamer(name) VALUES($1) ON CONFLICT ON CONSTRAINT streamer_pk DO NOTHING";
+            const values = [streamer.user_name];
+            sqlCon.query(query, values, (err, res) => {
+                if(err) {
+                    console.error(err);
+                    return;
+                }
             });
         }
 
         // make next request if more pages are available
         if(data.pagination) {
             //makeRequest(data.pagination.cursor, db);
-            setTimeout(makeRequest,2000,data.pagination.cursor, db, twitchSettings);
+            setTimeout(makeRequest,2000,data.pagination.cursor, twitchSettings);
         }
     });
 }
