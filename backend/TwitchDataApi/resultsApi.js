@@ -42,7 +42,11 @@ app.get('/topwordstreamer', (req, res) => {
             });
             return;
         }
-        res.send(result.rows.slice(0,max));
+        const response = {
+            type: 'word',
+            data: result.rows.slice(0,max)
+        }
+        res.send(response);
     });
 });
 
@@ -80,7 +84,11 @@ app.get('/topemotestreamer', (req, res) => {
             });
             return;
         }
-        res.send(result.rows.slice(0,max));
+        const response = {
+            type: 'emote',
+            data: result.rows.slice(0,max)
+        };
+        res.send(response);
     });
 });
 
@@ -108,7 +116,11 @@ app.get('/topword', (req, res) => {
             });
             return;
         }
-        res.send(result.rows.slice(0,max));
+        const response = {
+            type: 'word',
+            data: result.rows.slice(0,max)
+        };
+        res.send(response);
     });
 });
 
@@ -136,7 +148,11 @@ app.get('/topemote', (req, res) => {
             });
             return;
         }
-        res.send(result.rows.slice(0,max));
+        const response = {
+            type: 'emote',
+            data: result.rows.slice(0,max)
+        };
+        res.send(response);
     });
 });
 
@@ -159,7 +175,11 @@ app.get('/wordsearch', (req, res) => {
             });
             return;
         }
-        res.send(result.rows);
+        const response = {
+            type: 'streamer',
+            data: result.rows
+        };
+        res.send(response);
     });
 });
 
@@ -182,7 +202,11 @@ app.get('/emotesearch', (req, res) => {
             });
             return;
         }
-        res.send(result.rows);
+        const response = {
+            type: 'streamer',
+            data: result.rows
+        };
+        res.send(response);
     });
 });
 
