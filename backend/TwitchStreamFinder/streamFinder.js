@@ -9,7 +9,7 @@ exports.start = (client) => {
     makeRequest(false, twitchApiSettings);
 }
 
-function makeRequest(pagination, db, twitchSettings) {
+function makeRequest(pagination, twitchSettings) {
     let options = {
         url: 'https://api.twitch.tv/helix/streams?first=100',
         headers: {
