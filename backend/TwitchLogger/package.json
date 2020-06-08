@@ -1,7 +1,7 @@
 {
-  "name": "twitchlogger",
+  "name": "twitchloggersql",
   "version": "1.0.0",
-  "description": "Logs data gathered from twitch chat",
+  "description": "",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mongodb": "^3.5.7",
+    "pg": "^8.2.1",
     "tmi.js": "^1.5.0"
   }
 }

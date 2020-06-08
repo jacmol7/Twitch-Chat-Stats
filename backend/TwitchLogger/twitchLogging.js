@@ -1,17 +1,18 @@
+const {Pool, Client} = require('pg');
 const tmi = require('tmi.js');
-//const chalk = require('chalk');
-const fs = require('fs');
 
-var wordCollection;
-var client;
-const options = JSON.parse(fs.readFileSync('twitchSettings.json'));
+var sqlCon;
+var twitchCon;
 
-exports.start = (database) => {
-    wordCollection = database.db('twitch').collection('word');
-    client = new tmi.client(options);
-    client.on('message', onMessageHandler);
-    client.on('connected', onConnectedHandler);
-    client.connect();
+exports.start = (sql, twitch) => {
+    sqlCon = sql;
+    twitchCon = twitch;
+    twitchCon.on('message', onMessageHandler);
+    twitchCon.on('connected', onConnectedHandler);
+}
+
+function onConnectedHandler(address, port) {
+    console.log(`Connected to ${address}:${port}`);
 }
 
 function onMessageHandler(channel, user, msg, self) {
@@ -45,6 +46,11 @@ function onMessageHandler(channel, user, msg, self) {
     const words = msg.trim().split(' ');
     let wordCounts = new Map();
     words.forEach(word => {
+        // if word is not emote convert to lowercase and remove punctuation
+        if(!emoteCounts.has(word)) {
+            word = word.toLowerCase();
+            word = word.replace(/(~|`|!|@|#|$|%|^|&|\*|\(|\)|{|}|\[|\]|;|:|\"|'|<|,|\.|>|\?|\/|\\|\||-|_|\+|=)/g,"");
+        }
         if(!wordCounts.has(word)) {
             wordCounts.set(word, 1);
         } else {
@@ -54,27 +60,25 @@ function onMessageHandler(channel, user, msg, self) {
 
     // write to database
     for (let word of wordCounts.keys()) {
-        if(!emoteCounts.get(word)) {
-            let updateOp = {$inc: {}};
-            updateOp.$inc["streamer."+channel] = wordCounts.get(word);
-            updateOp.$inc.total = wordCounts.get(word);
-            wordCollection.findOneAndUpdate({word:word, isEmote:false},updateOp,{upsert:true}).catch(e => {
-                console.log(e);
-            });
+        const newQuery = "INSERT INTO word(word, streamer, isEmote, emoteID, count) VALUES($1,$2,$3,$4,$5) ON CONFLICT ON CONSTRAINT word_pk DO UPDATE SET count= word.count + EXCLUDED.count RETURNING *";
+
+        let values = [word, channel]
+        if(!emoteCounts.has(word)) {
+            values = values.concat([false, null, wordCounts.get(word)]);
         } else {
-            let updateOp = {$inc: {}, $set: {}};
-            updateOp.$inc["streamer."+channel] = wordCounts.get(word);
-            updateOp.$inc.total = wordCounts.get(word);
-            updateOp.$set.emoteID = emoteCounts.get(word).emoteID;
-            wordCollection.findOneAndUpdate({word:word, isEmote:true},updateOp,{upsert:true}).catch(e => {
-                console.log(e);
-            });
+            values = values.concat([true, emoteCounts.get(word).emoteID, wordCounts.get(word)]);
         }
+        sqlCon.query(newQuery, values, (err, res) => {
+        if(err) {
+            console.error(err);
+                return;
+            }
+
+            console.log(res.rows[0].word);
+            /* if(channel === 'jacmol7') {
+                console.log(res.rows);
+            } */
+        });
     }
 
-    //console.log(`${chalk.hex(user.color || '#FFFFFF')(user.username)} : ${msg.trim()}`);
-}
-
-function onConnectedHandler(address, port) {
-    console.log(`Connected to ${address}:${port}`);
 }

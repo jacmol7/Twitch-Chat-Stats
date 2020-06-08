@@ -2,7 +2,7 @@ FROM node:lts
 
 WORKDIR /usr/src/app
 COPY /TwitchDataApi .
-COPY mongodbSettings.json .
+COPY sqlSettings.json .
 RUN npm install
 EXPOSE 3000
 CMD ["node", "main.js"]

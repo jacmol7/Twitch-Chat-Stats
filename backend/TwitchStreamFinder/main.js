@@ -1,19 +1,20 @@
-const MongoClient = require('mongodb').MongoClient;
+const {Pool, Client} = require('pg');
 const fs = require('fs');
 
 const streamFinder = require('./streamFinder.js');
 
-const dbOptions = JSON.parse(fs.readFileSync('mongodbSettings.json'));
-const url = `mongodb://${dbOptions.username}:${dbOptions.password}@${dbOptions.address}:${dbOptions.port}/?compressors=zlib`;
+// read config files
+const dbOptions = JSON.parse(fs.readFileSync('sqlSettings.json'));
 
-MongoClient.connect(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}, (err, client) => {
-    if(err) {
-        console.error(err);
-        return;
-    }
+// connect to database
+const sqlPool = new Pool({
+    user: dbOptions.user,
+    host: dbOptions.host;
+    database: dbOptions.database,
+    Password: dbOptions.password,
+    port: dbOptions.port
+});
+sqlPool.connect();
 
-    streamFinder.start(client);
-})
+// start finding twitch streamers
+streamFinder.start(sqlPool);

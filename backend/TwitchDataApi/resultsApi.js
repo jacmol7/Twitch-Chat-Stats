@@ -1,7 +1,12 @@
 const express = require('express');
 const app = express();
 const port = 3000;
-var wordCollection;
+var sqlCon;
+
+exports.start = client => {
+    sqlCon = client;
+    app.listen(port, () => console.log(`listening at http://localhost:${port}`));
+}
 
 // top word for streamer
 app.get('/topwordstreamer', (req, res) => {
@@ -27,19 +32,18 @@ app.get('/topwordstreamer', (req, res) => {
         return;
     }
     
-    let query = {isEmote: {"$eq": false}, word: {"$exists": true}};
-    query[streamerIndex] = {"$exists": true}
-    
-    let sort = {};
-    sort[streamerIndex] = -1;
-    
-    let filter = {projection: {_id: 0, word: 1}};
-    filter.projection[streamerIndex] = 1
+    const query = "SELECT word, count FROM word WHERE streamer=$1 AND isEmote=false ORDER BY count DESC";
+    const values = [streamer];
 
-    wordCollection.find(query, filter).sort(sort).toArray().then(result => {
-        res.send(result.slice(0,max));
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        res.send(result.rows.slice(0,max));
     });
-    
 });
 
 // top emote for streamer
@@ -66,19 +70,18 @@ app.get('/topemotestreamer', (req, res) => {
         return;
     }
     
-    let query = {isEmote: {"$eq": true}, word: {"$exists": true}, emoteID: {"$exists": true}};
-    query[streamerIndex] = {"$exists": true}
-    
-    let sort = {};
-    sort[streamerIndex] = -1;
-    
-    let filter = {projection: {_id: 0, word: 1, emoteID: 1}};
-    filter.projection[streamerIndex] = 1
+    const query = "SELECT word, emoteID, count FROM word WHERE streamer=$1 AND isEmote=true ORDER BY count DESC";
+    const values = [streamer];
 
-    wordCollection.find(query, filter).sort(sort).toArray().then(result => {
-        res.send(result.slice(0,max));
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        res.send(result.rows.slice(0,max));
     });
-    
 });
 
 // top word
@@ -95,12 +98,17 @@ app.get('/topword', (req, res) => {
         return;
     }
     
-    const query = {word: {"$exists": true}, isEmote: {"$eq": false}};
-    const sort = {total: -1};
-    const filter = {projection: {_id: 0}};
+    const query = "SELECT word, SUM(count) as count FROM word WHERE isEmote=false GROUP BY word ORDER BY SUM(count) DESC";
+    const values = [];
 
-    wordCollection.find(query, filter).sort(sort).toArray().then(result => {
-        res.send(result.slice(0,max));
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        res.send(result.rows.slice(0,max));
     });
 });
 
@@ -118,12 +126,17 @@ app.get('/topemote', (req, res) => {
         return;
     }
 
-    const query = {word: {"$exists": true}, isEmote: {"$eq": true}};
-    const sort = {total: -1};
-    const filter = {projection: {_id: 0}};
+    const query = "SELECT word, emoteID, SUM(count) as count FROM word WHERE isEmote=true GROUP BY word,emoteID ORDER BY SUM(count) DESC";
+    const values = [];
 
-    wordCollection.find(query, filter).sort(sort).toArray().then(result => {
-        res.send(result.slice(0,max));
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        res.send(result.rows.slice(0,max));
     });
 });
 
@@ -136,11 +149,17 @@ app.get('/wordsearch', (req, res) => {
         return;
     }
 
-    const query = {word: {"$eq": word}, isEmote: {"$eq": false}};
-    const filter = {projection: {_id: 0}};
-    
-    wordCollection.findOne(query, filter).then(result => {
-        res.send(result);
+    const query = "SELECT streamer, count FROM word WHERE word = $1 AND isEmote=false ORDER BY count DESC";
+    const values = [word];
+
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        res.send(result.rows);
     });
 });
 
@@ -153,11 +172,17 @@ app.get('/emotesearch', (req, res) => {
         return;
     }
 
-    const query = {word: {"$eq": emote}, isEmote: {"$eq": true}};
-    const filter = {projection: {_id: 0}};
+    const query = "SELECT streamer, count FROM word WHERE word = $1 AND isEmote=true ORDER BY count DESC";
+    const values = [emote];
 
-    wordCollection.findOne(query, filter).then(result => {
-        res.send(result);
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        res.send(result.rows);
     });
 });
 
@@ -166,8 +191,3 @@ app.get('*', (req, res) => {
         error: "unsupported command"
     });
 });
-
-exports.start = client => {
-    wordCollection = client.db('twitch').collection('word');
-    app.listen(port, () => console.log(`listening at http://localhost:${port}`));
-}

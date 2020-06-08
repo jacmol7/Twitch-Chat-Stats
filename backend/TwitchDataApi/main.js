@@ -1,19 +1,20 @@
-const MongoClient = require('mongodb').MongoClient;
+const {Pool, Client} = require('pg');
 const fs = require('fs');
 
-const resultsApi = require('./resultsApi');
+const resultsApi = require('./resultsApi.js');
 
-const dbOptions = JSON.parse(fs.readFileSync('mongodbSettings.json'));
-const url = `mongodb://${dbOptions.username}:${dbOptions.password}@${dbOptions.address}:${dbOptions.port}/?compressors=zlib`;
+// read config files
+const dbOptions = JSON.parse(fs.readFileSync('sqlSettings.json'));
 
-MongoClient.connect(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}, (err, client) => {
-    if(err) {
-        console.error(err);
-        return;
-    }
+// connect to database
+const sqlPool = new Pool({
+    user: dbOptions.user,
+    host: dbOptions.host,
+    database: dbOptions.database,
+    password: dbOptions.password,
+    port: dbOptions.port
+});
+sqlPool.connect();
 
-    resultsApi.start(client);
-})
+// start results api
+resultsApi.start(sqlPool);
