@@ -6,3 +6,9 @@ CREATE TABLE public.word (
 	emoteid varchar NULL,
 	CONSTRAINT word_pk PRIMARY KEY (word, streamer, isemote)
 );
+
+CREATE TABLE public.streamer (
+	name varchar NOT NULL,
+	lastSeen date NOT NULL,
+	CONSTRAINT streamer_pk PRIMARY KEY (name)
+);
