@@ -1,38 +1,35 @@
-const request = require('request');
+const got = require('got');
 const fs = require('fs');
-const {Pool, Client} = require('pg');
-const sqlCon;
 
-exports.start = (client) => {
+var sqlCon;
+var tokenGrabber;
+
+exports.start = (dbClient, twitchTokenGrabber) => {
     const twitchApiSettings = JSON.parse(fs.readFileSync('twitchApiSettings.json'));
-    sqlCon = client;
-    makeRequest(false, twitchApiSettings);
+    sqlCon = dbClient;
+    tokenGrabber = twitchTokenGrabber;
+    tokenGrabber.getToken().then((token) => {
+        console.log(`Bearer ${token}`);
+        makeRequest(false, twitchApiSettings, token, 1);
+    });
 }
 
-function makeRequest(pagination, twitchSettings) {
-    let options = {
-        url: 'https://api.twitch.tv/helix/streams?first=100',
+function makeRequest(pagination, twitchSettings, token, pageNo) {
+    let url = 'https://api.twitch.tv/helix/streams?first=100';
+    let headers = {
         headers: {
             'Client-ID': twitchSettings.ClientID,
-            'Authorization': twitchSettings.Authorization
+            'Authorization': `Bearer ${token}`
         }
-    };
-
-    // add pagination key if this request is not for the first page
-    if(pagination) {
-        options.url = options.url + `&after=${pagination}`
     }
-    
-    console.log('-------------------------------');
-    request(options, (error, response, body) => {
-        // stop if an error occured
-        if(error) {
-            console.error(error);
-            return;
-        }
 
-        //parse response data
-        let data = JSON.parse(response.body);
+    // add pagination to the url
+    if(pagination) {
+        url += `&after=${pagination}`;
+    }
+
+    got(url, headers).json().then((data) => {
+        //console.log(data);
 
         // stop if an error has occured
         if(data.error) {
@@ -48,7 +45,7 @@ function makeRequest(pagination, twitchSettings) {
         for(let streamer of data.data) {
             console.log(streamer.user_name);
 
-            const query = "INSERT INTO streamer(name) VALUES($1) ON CONFLICT ON CONSTRAINT streamer_pk DO NOTHING";
+            const query = "INSERT INTO streamer(name, lastSeen) VALUES($1, NOW()) ON CONFLICT ON CONSTRAINT streamer_pk DO UPDATE SET lastSeen = NOW()";
             const values = [streamer.user_name];
             sqlCon.query(query, values, (err, res) => {
                 if(err) {
@@ -60,8 +57,20 @@ function makeRequest(pagination, twitchSettings) {
 
         // make next request if more pages are available
         if(data.pagination) {
-            //makeRequest(data.pagination.cursor, db);
-            setTimeout(makeRequest,2000,data.pagination.cursor, twitchSettings);
+            if(pageNo < 10) {
+                setTimeout(makeRequest,2000,data.pagination.cursor, twitchSettings, token, pageNo+1);
+            } else {
+                setTimeout(makeRequest,2000, false, twitchSettings, token, 1);
+            }
+        }
+    }).catch((error) => {
+        console.error(error);
+        // if access was denied
+        if(error.name === 'HTTPError') {
+            // get a new access token and retry
+            tokenGrabber.getToken().then((newToken) => {
+                makeRequest(false, twitchSettings, newToken, 1)
+            });
         }
     });
 }
