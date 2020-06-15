@@ -1,8 +1,6 @@
-const {Pool, Client} = require('pg');
-const tmi = require('tmi.js');
-
 var sqlCon;
 var twitchCon;
+var doneFirstUpdate = false;
 
 exports.start = (sql, twitch) => {
     sqlCon = sql;
@@ -13,6 +11,16 @@ exports.start = (sql, twitch) => {
 
 function onConnectedHandler(address, port) {
     console.log(`Connected to ${address}:${port}`);
+    // if this is the first time connecting, join streams
+    /* if(!doneFirstUpdate) {
+        updateStreamers();
+        doneFirstUpdate = true;
+    } */
+    
+    // update the streamers being monitored every 5 minutes
+    setInterval(updateStreamers,300000);
+
+    console.log(twitchCon.getChannels());
 }
 
 function onMessageHandler(channel, user, msg, self) {
@@ -74,11 +82,79 @@ function onMessageHandler(channel, user, msg, self) {
                 return;
             }
 
-            console.log(res.rows[0].word);
-            /* if(channel === 'jacmol7') {
-                console.log(res.rows);
-            } */
+            //console.log(res.rows[0].word);
         });
     }
+}
 
+function updateStreamers() {
+    // get all the known streamers
+    const query = 'SELECT name FROM streamer';
+    sqlCon.query(query, [], (err, res) => {
+        if(err) {
+            console.error(err);
+            return;
+        }
+        
+        const currStreamers = twitchCon.getChannels();
+        const newStreamers = res.rows.map((streamer) => {return streamer.name});
+
+        let toJoin = [];
+        let toLeave = [];
+
+        // find streams to leave 
+        for(let streamer of currStreamers) {
+            if(!newStreamers.includes(streamer.substring(1))) {
+                toLeave.push(streamer.substring(1));
+            }
+        }
+
+        // find streams to join
+        for(let streamer of newStreamers) {
+            if(!currStreamers.includes(`#${streamer}`)) {
+                toJoin.push(streamer);
+            }
+        }
+
+        leaveManyStreams(toLeave);
+        joinManyStreams(toJoin);
+    });
+}
+
+function leaveManyStreams(streams) {
+    if(!streams.length > 0) return;
+
+    let streamer = streams.pop();
+    twitchCon.part(streamer).then((res) => {
+        console.log(`Left: ${res[0]}`);
+        leaveManyStreams(streams)
+    }).catch((error) => {
+        console.error(error + ` ${streamer}`)
+        // if not connected, wait, if failed skip
+        if(error === 'Not connected to server.') {
+            streams.push(streamer);
+            setTimeout(leaveManyStreams,2000,streamer);
+        } else {
+            leaveManyStreams(streams);
+        }
+    })
+}
+
+function joinManyStreams(streams) {
+    if(!streams.length > 0) return;
+
+    let streamer = streams.pop()
+    twitchCon.join(streamer).then((res) => {
+        console.log(`Joined: ${res[0]}`);
+        joinManyStreams(streams);
+    }).catch((error) => {
+        console.error(error + ` ${streamer}`);
+        // if not connected, wait, if failed to join skip streamer
+        if(error === 'Not connected to server.') {
+            streams.push(streamer);
+            setTimeout(joinManyStreams,2000,streams);
+        } else {
+            joinManyStreams(streams);
+        }
+    });
 }
