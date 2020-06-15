@@ -12,10 +12,10 @@ exports.start = (sql, twitch) => {
 function onConnectedHandler(address, port) {
     console.log(`Connected to ${address}:${port}`);
     // if this is the first time connecting, join streams
-    /* if(!doneFirstUpdate) {
+    if(!doneFirstUpdate) {
         updateStreamers();
         doneFirstUpdate = true;
-    } */
+    }
     
     // update the streamers being monitored every 5 minutes
     setInterval(updateStreamers,300000);
