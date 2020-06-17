@@ -43,9 +43,7 @@ function makeRequest(pagination, twitchSettings, token, pageNo) {
 
         // add streamer names to database
         for(let streamer of data.data) {
-            console.log(streamer.user_name);
-
-            const query = "INSERT INTO streamer(name, lastSeen) VALUES($1, NOW()) ON CONFLICT ON CONSTRAINT streamer_pk DO UPDATE SET lastSeen = NOW()";
+            const query = "INSERT INTO streamer(name, lastSeen) VALUES($1, NOW()) ON CONFLICT ON CONSTRAINT streamer_pk DO UPDATE SET lastSeen = EXCLUDED.lastSeen RETURNING *";
             const values = [streamer.user_name];
             sqlCon.query(query, values, (err, res) => {
                 if(err) {
