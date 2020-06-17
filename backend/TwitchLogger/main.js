@@ -9,7 +9,7 @@ const options = JSON.parse(fs.readFileSync('twitchSettings.json'));
 const dbOptions = JSON.parse(fs.readFileSync('sqlSettings.json'));
 
 // connect to database
-const sqlPool = new Pool({
+const sqlPool = new Client({
     user: dbOptions.user,
     host: dbOptions.host,
     database: dbOptions.database,
@@ -19,7 +19,8 @@ const sqlPool = new Pool({
 sqlPool.connect();
 
 // connect to twitch
-client = new tmi.client(options);
+//client = new tmi.client(options);
+client = new tmi.client({"connection":{"reconnect":true}});
 client.connect();
 
 // start logging

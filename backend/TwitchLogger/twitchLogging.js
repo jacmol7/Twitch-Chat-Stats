@@ -11,14 +11,18 @@ exports.start = (sql, twitch) => {
 
 function onConnectedHandler(address, port) {
     console.log(`Connected to ${address}:${port}`);
+    process.on('message', (msg) => {
+        joinManyStreams(msg);
+    });
+    process.send('connected');
     // if this is the first time connecting, join streams
-    if(!doneFirstUpdate) {
+    /* if(!doneFirstUpdate) {
         updateStreamers();
         doneFirstUpdate = true;
     }
     
     // update the streamers being monitored every 5 minutes
-    setInterval(updateStreamers,300000);
+    setInterval(updateStreamers,300000); */
 
     console.log(twitchCon.getChannels());
 }
@@ -82,7 +86,7 @@ function onMessageHandler(channel, user, msg, self) {
                 return;
             }
 
-            //console.log(res.rows[0].word);
+            console.log(res.rows[0].word);
         });
     }
 }
@@ -149,7 +153,7 @@ function joinManyStreams(streams) {
         //console.log(`Joined: ${res[0]}`);
         joinManyStreams(streams);
     }).catch((error) => {
-        console.error(error + ` ${streamer}`);
+        //console.error(error + ` ${streamer}`);
         // if not connected, wait, if failed to join skip streamer
         if(error === 'Not connected to server.') {
             streams.push(streamer);
