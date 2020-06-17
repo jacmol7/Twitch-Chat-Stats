@@ -104,6 +104,7 @@ function updateStreamers() {
 
         // find streams to leave 
         for(let streamer of currStreamers) {
+            console.log(streamer.substring(1));
             if(!newStreamers.includes(streamer.substring(1))) {
                 toLeave.push(streamer.substring(1));
             }
@@ -133,7 +134,7 @@ function leaveManyStreams(streams) {
         // if not connected, wait, if failed skip
         if(error === 'Not connected to server.') {
             streams.push(streamer);
-            setTimeout(leaveManyStreams,2000,streamer);
+            setTimeout(leaveManyStreams,2000,streams);
         } else {
             leaveManyStreams(streams);
         }
@@ -145,7 +146,7 @@ function joinManyStreams(streams) {
 
     let streamer = streams.pop()
     twitchCon.join(streamer).then((res) => {
-        console.log(`Joined: ${res[0]}`);
+        //console.log(`Joined: ${res[0]}`);
         joinManyStreams(streams);
     }).catch((error) => {
         console.error(error + ` ${streamer}`);
