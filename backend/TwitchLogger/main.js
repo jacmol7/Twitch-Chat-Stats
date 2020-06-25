@@ -19,7 +19,6 @@ const sqlPool = new Client({
 sqlPool.connect();
 
 // connect to twitch
-//client = new tmi.client(options);
 client = new tmi.client({"connection":{"reconnect":true}});
 client.connect();
 
