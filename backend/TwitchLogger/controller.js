@@ -80,30 +80,43 @@ function updateStreamers(streams) {
             newStreams = newStreams.slice(requestedNum, newStreams.length);
             console.log(`Joining: ${toJoin}`);
             console.log(`Next up: ${newStreams}`);
-            // send join message
-            loggers.get(loggerID).send({join:toJoin});
-            // remove from wait list
-            loggers.delete(loggerID);
-            // record the logger responsible for these streams
-            for(let streamer of toJoin) {
-                streamers.set(streamer, loggerID);
+            try {
+                // send join message
+                loggers.get(loggerID).send({join:toJoin});
+                // remove from wait list
+                loggers.delete(loggerID);
+                // record the logger responsible for these streams
+                for(let streamer of toJoin) {
+                    streamers.set(streamer, loggerID);
+                }
+            } catch (error) {
+                // something went wrong, replace the logger
+                const replacementID = replaceLogger(loggerID, toJoin);
+                console.log(`Joining streams on ${loggerID} failed and was replaced by ${replacementID}`);
             }
         } else {
             // join the last few streams
             if(newStreams.length != 0) {
-                loggers.get(loggerID).send({join:newStreams});
-                // update count that the logger is waiting for or remove it from wait list
-                let newCount = requestedNum - newStreams.length;
-                console.log(`new remaining count is: ${newCount}`);
-                if(newCount === 0) {
-                    waitingLoggers.delete(loggerID);
-                } else {
-                    waitingLoggers.set(loggerID, newCount);
+                try {
+                    loggers.get(loggerID).send({join:newStreams});
+                    // update count that the logger is waiting for or remove it from wait list
+                    let newCount = requestedNum - newStreams.length;
+                    console.log(`new remaining count is: ${newCount}`);
+                    if(newCount === 0) {
+                        waitingLoggers.delete(loggerID);
+                    } else {
+                        waitingLoggers.set(loggerID, newCount);
+                    }
+                    // record the logger responsible for these streams
+                    for(let streamer of newStreams) {
+                        streamers.set(streamer, loggerID);
+                    }
+                } catch (error) {
+                    // something went wrong, replace the logger
+                    const replacementID = replaceLogger(loggerID, toJoin);
+                    console.log(`Joining streams on ${loggerID} failed and was replaced by ${replacementID}`);
                 }
-                // record the logger responsible for these streams
-                for(let streamer of newStreams) {
-                    streamers.set(streamer, loggerID);
-                }
+                
             }
             // stop because all streams have been joined
             return;
@@ -130,6 +143,21 @@ function updateStreamers(streams) {
     }
 
     removeEmptyLoggers();
+}
+
+// replaces a failed logger, can be given new streams to join at the same time
+function replaceLogger(loggerID, newStreams) {
+    // get streams the old logger is monitoring
+    for(let streamer of streamers) {
+        if(streamers.get(streamer) === loggerID) {
+            newStreams.push(streamer);
+        }
+    }
+    // remove references to the old logger
+    waitingLoggers.delete(loggerID);
+    loggers.delete(loggerID);
+    // returns the id of the replacement logger;
+    return spawnLogger(newStreams);
 }
 
 function removeEmptyLoggers() {
