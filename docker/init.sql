@@ -12,3 +12,5 @@ CREATE TABLE public.streamer (
 	lastSeen date NOT NULL,
 	CONSTRAINT streamer_pk PRIMARY KEY (name)
 );
+
+CREATE INDEX count_index ON public.word USING btree (count DESC NULLS LAST);
