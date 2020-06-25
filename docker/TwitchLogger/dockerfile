@@ -5,4 +5,4 @@ COPY /TwitchLogger .
 COPY twitchSettings.json .
 COPY sqlSettings.json .
 RUN npm install
-CMD ["node", "main.js"]
+CMD ["node", "controller.js"]
