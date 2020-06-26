@@ -1,0 +1,12 @@
+{
+    "options": {
+      "debug": false
+    },
+    "connection": {
+      "reconnect":true
+    },
+    "identity": {
+      "username": "justinfan1234",
+      "password": ""
+    }
+}

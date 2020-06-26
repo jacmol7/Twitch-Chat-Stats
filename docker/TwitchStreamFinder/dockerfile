@@ -1,6 +1,6 @@
 FROM node:lts
 
 WORKDIR /usr/src/app
-COPY /TwitchLogger .
+COPY /TwitchStreamFinder .
 RUN npm install
-CMD ["node", "controller.js"]
+CMD ["node", "main.js"]
