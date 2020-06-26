@@ -31,8 +31,6 @@ function onMessageHandler(channel, user, msg, self) {
     //stop if the message is from the bot
     if (self) { return; }
 
-    console.log(process.env.dbuser);
-
     //remove # at start of channel name
     channel = channel.substring(1);
 

@@ -5,7 +5,10 @@ var sqlCon;
 var tokenGrabber;
 
 exports.start = (dbClient, twitchTokenGrabber) => {
-    const twitchApiSettings = JSON.parse(fs.readFileSync('twitchApiSettings.json'));
+    const twitchApiSettings = {
+        ClientID: process.env.twitchclientid,
+        Authorization: process.env.twitchsecret
+    };
     sqlCon = dbClient;
     tokenGrabber = twitchTokenGrabber;
     tokenGrabber.getToken().then((token) => {

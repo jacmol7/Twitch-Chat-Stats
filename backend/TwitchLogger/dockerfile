@@ -1,6 +1,6 @@
 FROM node:lts
 
 WORKDIR /usr/src/app
-COPY /TwitchLogger .
+COPY . .
 RUN npm install
 CMD ["node", "controller.js"]

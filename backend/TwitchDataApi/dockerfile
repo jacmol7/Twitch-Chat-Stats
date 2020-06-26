@@ -1,6 +1,7 @@
 FROM node:lts
 
 WORKDIR /usr/src/app
-COPY /TwitchStreamFinder .
+COPY . .
 RUN npm install
+EXPOSE 3000
 CMD ["node", "main.js"]
