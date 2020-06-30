@@ -2,12 +2,6 @@
 /backend/TwitchDataApi/node_modules
 /backend/TwitchStreamFinder/node_modules
 
-/backend/TwitchLogger/sqlSettings.json
-/backend/TwitchDataApi/sqlSettings.json
-/backend/TwitchStreamFinder/sqlSettings.json
-
-/backend/TwitchLogger/twitchSettings.json
-/backend/TwitchStreamFinder/twitchApiSettings.json
-
+.env
 
 /backend/TwitchTokenGrabber

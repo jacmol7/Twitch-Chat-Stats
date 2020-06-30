@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+    twitchdb:
+        image: postgres   
+        ports:
+            - "5432:5432"
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: "${dbpassword}"
+            POSTGRES_DB: "${database}"
+        volumes:
+            - twitchdbpostgres:/var/lib/postgresql/data
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    twitchlogger:
+        build:
+            context: ./TwitchLogger
+        environment: 
+            dbuser: "${dbuser}"
+            dbpassword: "${dbpassword}"
+            database: "${database}"
+            dbhost: "${dbhost}"
+            dbport: "${dbport}"
+        restart: always
+    twitchdataapi:
+        build:
+            context: ./TwitchDataApi
+        ports:
+            - "3000:3000"
+        environment: 
+            dbuser: "${dbuser}"
+            dbpassword: "${dbpassword}"
+            database: "${database}"
+            dbhost: "${dbhost}"
+            dbport: "${dbport}"
+        restart: always
+    twitchstreamfinder:
+        build:
+            context: ./TwitchStreamFinder
+        environment: 
+            dbuser: "${dbuser}"
+            dbpassword: "${dbpassword}"
+            database: "${database}"
+            dbhost: "${dbhost}"
+            dbport: "${dbport}"
+            twitchclientid: "${twitchclientid}"
+            twitchsecret: "${twitchsecret}"
+        restart: always
+
+volumes:
+    twitchdbpostgres:

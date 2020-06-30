@@ -1,8 +1,6 @@
 FROM node:lts
 
 WORKDIR /usr/src/app
-COPY /TwitchLogger .
-COPY twitchSettings.json .
-COPY sqlSettings.json .
+COPY . .
 RUN npm install
 CMD ["node", "controller.js"]

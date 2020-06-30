@@ -1,21 +1,18 @@
 const {fork} = require('child_process');
-const {Pool} = require('pg');
+const {Client} = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 
 // the number of streamers for each process to handle
 const streamerLimit = 250;
 
-// settings for the DB connection
-const dbOptions = JSON.parse(fs.readFileSync('sqlSettings.json'));
-
 // connect to database
-const sqlPool = new Pool({
-    user: dbOptions.user,
-    host: dbOptions.host,
-    database: dbOptions.database,
-    password: dbOptions.password,
-    port: dbOptions.port
+const sqlPool = new Client({
+    user: process.env.dbuser,
+    host: process.env.dbhost,
+    database: process.env.database,
+    password: process.env.dbpassword,
+    port: process.env.dbport
 });
 sqlPool.connect();
 
@@ -177,7 +174,12 @@ function spawnLogger(streams) {
     
     let p = fork('main.js',null,{
         env: {
-            id: id
+            id: id,
+            dbuser: process.env.dbuser,
+            dbhost: process.env.dbhost,
+            database: process.env.database,
+            dbpassword: process.env.dbpassword,
+            dbport: process.env.dbport
         }
     })
     
