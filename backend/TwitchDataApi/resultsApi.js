@@ -18,7 +18,6 @@ app.get('/topwordstreamer', (req, res) => {
         });
         return;
     }
-    const streamerIndex = "streamer."+streamer;
 
     // retrieve number of results requested from get params
     let max = req.query.max;
@@ -32,8 +31,8 @@ app.get('/topwordstreamer', (req, res) => {
         return;
     }
     
-    const query = "SELECT word, count FROM word WHERE streamer=$1 AND isEmote=false ORDER BY count DESC";
-    const values = [streamer];
+    const query = "SELECT word, count FROM word WHERE streamer=$1 AND isEmote=false ORDER BY count DESC LIMIT $2";
+    const values = [streamer, max];
 
     sqlCon.query(query, values, (err, result) => {
         if(err) {
@@ -44,7 +43,7 @@ app.get('/topwordstreamer', (req, res) => {
         }
         const response = {
             type: 'word',
-            data: result.rows.slice(0,max)
+            data: result.rows
         }
         res.send(response);
     });
@@ -60,7 +59,6 @@ app.get('/topemotestreamer', (req, res) => {
         });
         return;
     }
-    const streamerIndex = "streamer."+streamer;
 
     // retrieve number of results requested from get params
     let max = req.query.max;
@@ -74,8 +72,8 @@ app.get('/topemotestreamer', (req, res) => {
         return;
     }
     
-    const query = "SELECT word, emoteID, count FROM word WHERE streamer=$1 AND isEmote=true ORDER BY count DESC";
-    const values = [streamer];
+    const query = "SELECT word, emoteID, count FROM word WHERE streamer=$1 AND isEmote=true ORDER BY count DESC LIMIT $2";
+    const values = [streamer, max];
 
     sqlCon.query(query, values, (err, result) => {
         if(err) {
@@ -86,7 +84,7 @@ app.get('/topemotestreamer', (req, res) => {
         }
         const response = {
             type: 'emote',
-            data: result.rows.slice(0,max)
+            data: result.rows
         };
         res.send(response);
     });
@@ -106,8 +104,8 @@ app.get('/topword', (req, res) => {
         return;
     }
     
-    const query = "SELECT word, SUM(count) as count FROM word WHERE isEmote=false GROUP BY word ORDER BY SUM(count) DESC";
-    const values = [];
+    const query = "SELECT word, SUM(count) as count FROM word WHERE isEmote=false GROUP BY word ORDER BY SUM(count) DESC LIMIT $1";
+    const values = [max];
 
     sqlCon.query(query, values, (err, result) => {
         if(err) {
@@ -118,7 +116,7 @@ app.get('/topword', (req, res) => {
         }
         const response = {
             type: 'word',
-            data: result.rows.slice(0,max)
+            data: result.rows
         };
         res.send(response);
     });
@@ -138,8 +136,8 @@ app.get('/topemote', (req, res) => {
         return;
     }
 
-    const query = "SELECT word, emoteID, SUM(count) as count FROM word WHERE isEmote=true GROUP BY word,emoteID ORDER BY SUM(count) DESC";
-    const values = [];
+    const query = "SELECT word, emoteID, SUM(count) as count FROM word WHERE isEmote=true GROUP BY word,emoteID ORDER BY SUM(count) DESC LIMIT $1";
+    const values = [max];
 
     sqlCon.query(query, values, (err, result) => {
         if(err) {
@@ -150,7 +148,7 @@ app.get('/topemote', (req, res) => {
         }
         const response = {
             type: 'emote',
-            data: result.rows.slice(0,max)
+            data: result.rows
         };
         res.send(response);
     });
