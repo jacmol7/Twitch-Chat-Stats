@@ -208,6 +208,32 @@ app.get('/emotesearch', (req, res) => {
     });
 });
 
+app.get('/islogged', (req, res) => {
+    const streamer = req.query.streamer;
+    if(!streamer) {
+        res.send({
+            error: "No streamer was specified"
+        });
+        return;
+    }
+
+    const query = "SELECT * FROM streamer WHERE name = $1";
+    const values = [streamer];
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        const response = {
+            type: 'streamerDetails',
+            data: result.rows
+        };
+        res.send(response);
+    });
+});
+
 app.get('*', (req, res) => {
     res.send({
         error: "unsupported command"
