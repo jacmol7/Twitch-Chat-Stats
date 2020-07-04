@@ -234,6 +234,60 @@ app.get('/islogged', (req, res) => {
     });
 });
 
+app.get('/wordsearchstreamer', (req, res) => {
+    const streamer = req.query.streamer;
+    const word = req.query.word;
+    if(!streamer || !word) {
+        res.send({
+            error: "Missing word or streamer"
+        });
+        return;
+    }
+
+    const query = "SELECT word, streamer, count FROM word WHERE streamer = $1 AND word = $2 AND isemote = false";
+    const values = [streamer, word];
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        const response = {
+            type: 'word',
+            data: result.rows
+        };
+        res.send(response);
+    });
+});
+
+app.get('/emotesearchstreamer', (req, res) => {
+    const streamer = req.query.streamer;
+    const emote = req.query.emote;
+    if(!streamer || !emote) {
+        res.send({
+            error: "Missing emote or streamer"
+        });
+        return;
+    }
+
+    const query = "SELECT word, emoteid, streamer, count FROM word WHERE streamer = $1 AND word = $2 AND isemote = true";
+    const values = [streamer, emote];
+    sqlCon.query(query, values, (err, result) => {
+        if(err) {
+            res.send({
+                error: err
+            });
+            return;
+        }
+        const response = {
+            type: 'emote',
+            data: result.rows
+        };
+        res.send(response);
+    });
+});
+
 app.get('*', (req, res) => {
     res.send({
         error: "unsupported command"
