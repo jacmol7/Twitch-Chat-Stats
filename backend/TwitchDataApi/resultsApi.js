@@ -31,8 +31,8 @@ app.get('/topwordstreamer', (req, res) => {
         return;
     }
     
-    const query = "SELECT word, count FROM word WHERE streamer=$1 AND isEmote=false ORDER BY count DESC LIMIT $2";
-    const values = [streamer, max];
+    const query = "SELECT word, count FROM word WHERE LOWER(streamer)=$1 AND isEmote=false ORDER BY count DESC LIMIT $2";
+    const values = [streamer.toLowerCase(), max];
 
     sqlCon.query(query, values, (err, result) => {
         if(err) {
@@ -72,8 +72,8 @@ app.get('/topemotestreamer', (req, res) => {
         return;
     }
     
-    const query = "SELECT word, emoteID, count FROM word WHERE streamer=$1 AND isEmote=true ORDER BY count DESC LIMIT $2";
-    const values = [streamer, max];
+    const query = "SELECT word, emoteID, count FROM word WHERE LOWER(streamer)=$1 AND isEmote=true ORDER BY count DESC LIMIT $2";
+    const values = [streamer.toLowerCase(), max];
 
     sqlCon.query(query, values, (err, result) => {
         if(err) {
@@ -164,7 +164,7 @@ app.get('/wordsearch', (req, res) => {
     }
 
     const query = "SELECT streamer, count FROM word WHERE word = $1 AND isEmote=false ORDER BY count DESC";
-    const values = [word];
+    const values = [word.toLowerCase()];
 
     sqlCon.query(query, values, (err, result) => {
         if(err) {
@@ -190,8 +190,8 @@ app.get('/emotesearch', (req, res) => {
         return;
     }
 
-    const query = "SELECT streamer, count FROM word WHERE word = $1 AND isEmote=true ORDER BY count DESC";
-    const values = [emote];
+    const query = "SELECT streamer, count FROM word WHERE LOWER(word) = $1 AND isEmote=true ORDER BY count DESC";
+    const values = [emote.toLowerCase()];
 
     sqlCon.query(query, values, (err, result) => {
         if(err) {
@@ -217,8 +217,8 @@ app.get('/islogged', (req, res) => {
         return;
     }
 
-    const query = "SELECT * FROM streamer WHERE name = $1";
-    const values = [streamer];
+    const query = "SELECT * FROM streamer WHERE LOWER(name) = $1";
+    const values = [streamer.toLowerCase()];
     sqlCon.query(query, values, (err, result) => {
         if(err) {
             res.send({
@@ -244,8 +244,8 @@ app.get('/wordsearchstreamer', (req, res) => {
         return;
     }
 
-    const query = "SELECT word, streamer, count FROM word WHERE streamer = $1 AND word = $2 AND isemote = false";
-    const values = [streamer, word];
+    const query = "SELECT word, streamer, count FROM word WHERE LOWER(streamer) = $1 AND word = $2 AND isemote = false";
+    const values = [streamer.toLowerCase(), word.toLowerCase()];
     sqlCon.query(query, values, (err, result) => {
         if(err) {
             res.send({
@@ -271,8 +271,8 @@ app.get('/emotesearchstreamer', (req, res) => {
         return;
     }
 
-    const query = "SELECT word, emoteid, streamer, count FROM word WHERE streamer = $1 AND word = $2 AND isemote = true";
-    const values = [streamer, emote];
+    const query = "SELECT word, emoteid, streamer, count FROM word WHERE LOWER(streamer) = $1 AND LOWER(word) = $2 AND isemote = true";
+    const values = [streamer.toLocaleLowerCase(), emote.toLowerCase()];
     sqlCon.query(query, values, (err, result) => {
         if(err) {
             res.send({
